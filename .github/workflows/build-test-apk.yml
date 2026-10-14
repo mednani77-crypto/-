@@ -23,8 +23,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Android SDK tools
-        uses: android-actions/setup-android@v3
+      - name: Locate preinstalled Android SDK tools
+        shell: bash
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          if ! command -v sdkmanager >/dev/null 2>&1; then
+            SDK_MANAGER="$(find "$SDK_ROOT/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort -Vr | head -n 1)"
+            test -n "$SDK_MANAGER"
+            echo "$(dirname "$SDK_MANAGER")" >> "$GITHUB_PATH"
+          fi
+          "$SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager" --version || true
 
       - name: Set up Gradle 9.3.1 (wrapper JAR is not committed)
         uses: gradle/actions/setup-gradle@v4
@@ -34,8 +42,8 @@ jobs:
       - name: Install Android API 36 and minor SDK 36.1
         shell: bash
         run: |
-          sdkmanager --install "platforms;android-36" "platforms;android-36.1" "build-tools;36.0.0"
           yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install "platforms;android-36" "platforms;android-36.1" "build-tools;36.0.0"
 
       - name: Generate temporary debug signing key
         shell: bash
