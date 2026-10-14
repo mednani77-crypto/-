@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Centered within 66dp area (x: 21 to 87, y: 21 to 87) -->
+    <!-- Base Ledger / Document Pad -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M32,24 C29.8,24 28,25.8 28,28 L28,80 C28,82.2 29.8,84 32,84 L76,84 C78.2,84 80,82.2 80,80 L80,36 L68,24 L32,24 Z" />
+    <!-- Folded top corner -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M68,24 L68,36 L80,36 Z" />
+    <!-- Corporate Gold Brand Bar -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M34,31 L62,31 A2,2 0 0 1 62,35 L34,35 A2,2 0 0 1 34,31 Z" />
+    <!-- Sales Graph Bars -->
+    <!-- Bar 1 (Emerald Green for Collections) -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M35,62 L41,62 A1,1 0 0 1 42,63 L42,75 A1,1 0 0 1 41,76 L35,76 A1,1 0 0 1 34,75 L34,63 A1,1 0 0 1 35,62 Z" />
+    <!-- Bar 2 (Amber for Sales) -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M45,52 L51,52 A1,1 0 0 1 52,53 L52,75 A1,1 0 0 1 51,76 L45,76 A1,1 0 0 1 44,75 L44,53 A1,1 0 0 1 45,52 Z" />
+    <!-- Bar 3 (Indigo for Growth) -->
+    <path
+        android:fillColor="#4F46E5"
+        android:pathData="M55,42 L61,42 A1,1 0 0 1 62,43 L62,75 A1,1 0 0 1 61,76 L55,76 A1,1 0 0 1 54,75 L54,43 A1,1 0 0 1 55,42 Z" />
+    <!-- Upward Trend Line with Arrow -->
+    <path
+        android:strokeColor="#1E3A8A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M36,60 L48,50 L58,40 L69,44" />
+    <!-- Badge Circle on bottom right -->
+    <path
+        android:fillColor="#1E3A8A"
+        android:pathData="M73,73 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" />
+    <!-- Currency / Check Symbol in Badge -->
+    <path
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M68,73 L71.5,76.5 L78,69.5" />
+</vector>
