@@ -1,0 +1,77 @@
+name: Build SYSCO Sales Reps Test APK
+
+on:
+  push:
+    branches:
+      - build/apk-test-20261014
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android-debug-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK tools
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle 9.3.1 (wrapper JAR is not committed)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Install Android API 36 and minor SDK 36.1
+        shell: bash
+        run: |
+          sdkmanager --install "platforms;android-36" "platforms;android-36.1" "build-tools;36.0.0"
+          yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Generate temporary debug signing key
+        shell: bash
+        run: |
+          keytool -genkeypair -v -keystore debug.keystore \
+            -storepass android -alias androiddebugkey -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Assemble debug APK
+        shell: bash
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Prepare installable APK
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/SYSCO-Sales-Reps-Test.apk
+          sha256sum dist/SYSCO-Sales-Reps-Test.apk | tee dist/SHA256SUMS.txt
+
+      - name: Upload signed debug APK to build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SYSCO-Sales-Reps-Test-APK
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Publish test APK in GitHub Release for direct Android download
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TEST_TAG="apk-test-${GITHUB_SHA:0:8}"
+          gh release create "$TEST_TAG" "dist/SYSCO-Sales-Reps-Test.apk" "dist/SHA256SUMS.txt" \
+            --target "$GITHUB_SHA" \
+            --title "SYSCO Sales Reps - Android Test Build" \
+            --notes "Installable debug build for device testing. Not a production release. Built from the isolated build/apk-test-20261014 branch; main remains unchanged." \
+            --prerelease
