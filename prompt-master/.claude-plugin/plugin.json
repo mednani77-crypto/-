@@ -1,0 +1,10 @@
+{
+  "name": "prompt-master",
+  "version": "0.1.0",
+  "description": "Improves your rough draft inside the prompt box (Role, Task, Context, Format) so you review and send it yourself.",
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "mednani77-crypto"
+  }
+}
