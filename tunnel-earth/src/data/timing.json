@@ -2,12 +2,16 @@
   "fps": 30,
   "width": 1080,
   "height": 1920,
-  "measured": false,
-  "totalFrames": 780,
-  "totalSec": 26.0,
+  "measured": true,
+  "totalFrames": 916,
+  "totalSec": 30.533,
   "voice": "Fenrir",
   "ttsModel": "gemini-3.8-flash-tts",
-  "music": null,
+  "music": {
+    "file": "music/bg.mp3",
+    "volume": 0.1,
+    "durationSec": 30.816
+  },
   "whoosh": {
     "file": "sfx/whoosh.wav",
     "volume": 0.32,
@@ -19,25 +23,34 @@
       "id": 1,
       "text": "لو حفرتَ نفقاً يخترق الأرض… وقفزتَ فيه",
       "tts": "لو حفرتَ نفقاً يخترق الأرض… وقفزتَ فيه",
-      "audio": null,
-      "voiceSec": 2.724,
-      "rawVoiceSec": null,
-      "measured": false,
-      "innerSilences": [],
+      "audio": "vo/s1.wav",
+      "voiceSec": 3.409,
+      "rawVoiceSec": 3.57,
+      "measured": true,
+      "innerSilences": [
+        [
+          0.96,
+          1.054
+        ],
+        [
+          2.233,
+          2.493
+        ]
+      ],
       "startFrame": 0,
-      "durationFrames": 108,
+      "durationFrames": 123,
       "voStartFrame": 6,
-      "voFrames": 82,
+      "voFrames": 102,
       "chunks": [
         {
           "text": "لو حفرتَ نفقاً يخترق الأرض…",
           "startFrame": 4,
-          "endFrame": 64
+          "endFrame": 80
         },
         {
           "text": "وقفزتَ فيه",
-          "startFrame": 62,
-          "endFrame": 106
+          "startFrame": 78,
+          "endFrame": 121
         }
       ]
     },
@@ -45,20 +58,25 @@
       "id": 2,
       "text": "ستسقط وتتسارع حتى مركز الأرض",
       "tts": "ستسقطُ وتتسارعُ حتى مركزِ الأرض",
-      "audio": null,
-      "voiceSec": 2.096,
-      "rawVoiceSec": null,
-      "measured": false,
-      "innerSilences": [],
-      "startFrame": 108,
-      "durationFrames": 80,
-      "voStartFrame": 115,
-      "voFrames": 63,
+      "audio": "vo/s2.wav",
+      "voiceSec": 3.029,
+      "rawVoiceSec": 3.33,
+      "measured": true,
+      "innerSilences": [
+        [
+          1.846,
+          1.997
+        ]
+      ],
+      "startFrame": 123,
+      "durationFrames": 105,
+      "voStartFrame": 130,
+      "voFrames": 91,
       "chunks": [
         {
           "text": "ستسقط وتتسارع حتى مركز الأرض",
-          "startFrame": 113,
-          "endFrame": 186
+          "startFrame": 128,
+          "endFrame": 226
         }
       ]
     },
@@ -66,20 +84,20 @@
       "id": 3,
       "text": "بسرعة تقارب ٨ كيلومترات في الثانية!",
       "tts": "بسرعةٍ تقاربُ ثمانيةَ كيلومتراتٍ في الثانية!",
-      "audio": null,
-      "voiceSec": 2.865,
-      "rawVoiceSec": null,
-      "measured": false,
+      "audio": "vo/s3.wav",
+      "voiceSec": 3.418,
+      "rawVoiceSec": 3.65,
+      "measured": true,
       "innerSilences": [],
-      "startFrame": 188,
-      "durationFrames": 109,
-      "voStartFrame": 195,
-      "voFrames": 86,
+      "startFrame": 228,
+      "durationFrames": 121,
+      "voStartFrame": 235,
+      "voFrames": 103,
       "chunks": [
         {
           "text": "بسرعة تقارب ٨ كيلومترات في الثانية!",
-          "startFrame": 193,
-          "endFrame": 295
+          "startFrame": 233,
+          "endFrame": 347
         }
       ]
     },
@@ -87,25 +105,38 @@
       "id": 4,
       "text": "ثم تتباطأ… حتى تصل للطرف الآخر",
       "tts": "ثم تتباطأ… حتى تصلَ للطرفِ الآخر",
-      "audio": null,
-      "voiceSec": 2.416,
-      "rawVoiceSec": null,
-      "measured": false,
-      "innerSilences": [],
-      "startFrame": 297,
-      "durationFrames": 99,
-      "voStartFrame": 304,
-      "voFrames": 72,
+      "audio": "vo/s4.wav",
+      "voiceSec": 3.395,
+      "rawVoiceSec": 3.81,
+      "measured": true,
+      "innerSilences": [
+        [
+          1.028,
+          1.613
+        ],
+        [
+          1.765,
+          1.86
+        ],
+        [
+          2.483,
+          2.575
+        ]
+      ],
+      "startFrame": 349,
+      "durationFrames": 124,
+      "voStartFrame": 356,
+      "voFrames": 102,
       "chunks": [
         {
           "text": "ثم تتباطأ…",
-          "startFrame": 302,
-          "endFrame": 328
+          "startFrame": 354,
+          "endFrame": 403
         },
         {
           "text": "حتى تصل للطرف الآخر",
-          "startFrame": 326,
-          "endFrame": 394
+          "startFrame": 401,
+          "endFrame": 471
         }
       ]
     },
@@ -113,20 +144,25 @@
       "id": 5,
       "text": "بعد ٤٢ دقيقة فقط",
       "tts": "بعدَ اثنتينِ وأربعينَ دقيقةً فقط",
-      "audio": null,
-      "voiceSec": 2.096,
-      "rawVoiceSec": null,
-      "measured": false,
-      "innerSilences": [],
-      "startFrame": 396,
-      "durationFrames": 94,
-      "voStartFrame": 403,
-      "voFrames": 63,
+      "audio": "vo/s5.wav",
+      "voiceSec": 2.929,
+      "rawVoiceSec": 3.1,
+      "measured": true,
+      "innerSilences": [
+        [
+          2.667,
+          2.848
+        ]
+      ],
+      "startFrame": 473,
+      "durationFrames": 114,
+      "voStartFrame": 480,
+      "voFrames": 88,
       "chunks": [
         {
           "text": "بعد ٤٢ دقيقة فقط",
-          "startFrame": 401,
-          "endFrame": 488
+          "startFrame": 478,
+          "endFrame": 585
         }
       ]
     },
@@ -134,25 +170,34 @@
       "id": 6,
       "text": "والأغرب؟ أي نفق مستقيم… يستغرق المدة نفسها",
       "tts": "والأغرب؟ أيُّ نفقٍ مستقيم… يستغرقُ المدةَ نفسَها",
-      "audio": null,
-      "voiceSec": 3.505,
-      "rawVoiceSec": null,
-      "measured": false,
-      "innerSilences": [],
-      "startFrame": 490,
-      "durationFrames": 145,
-      "voStartFrame": 497,
-      "voFrames": 105,
+      "audio": "vo/s6.wav",
+      "voiceSec": 4.654,
+      "rawVoiceSec": 4.94,
+      "measured": true,
+      "innerSilences": [
+        [
+          0.644,
+          1.264
+        ],
+        [
+          2.617,
+          2.947
+        ]
+      ],
+      "startFrame": 587,
+      "durationFrames": 172,
+      "voStartFrame": 594,
+      "voFrames": 140,
       "chunks": [
         {
           "text": "والأغرب؟ أي نفق مستقيم…",
-          "startFrame": 495,
-          "endFrame": 553
+          "startFrame": 592,
+          "endFrame": 681
         },
         {
           "text": "يستغرق المدة نفسها",
-          "startFrame": 551,
-          "endFrame": 633
+          "startFrame": 679,
+          "endFrame": 757
         }
       ]
     },
@@ -160,25 +205,42 @@
       "id": 7,
       "text": "وإن لم يمسكك أحد… ستسقط عائداً إلينا من جديد",
       "tts": "وإن لم يُمسكْك أحد… ستسقطُ عائداً إلينا من جديد",
-      "audio": null,
-      "voiceSec": 3.185,
-      "rawVoiceSec": null,
-      "measured": false,
-      "innerSilences": [],
-      "startFrame": 635,
-      "durationFrames": 145,
-      "voStartFrame": 642,
-      "voFrames": 96,
+      "audio": "vo/s7.wav",
+      "voiceSec": 3.864,
+      "rawVoiceSec": 4.03,
+      "measured": true,
+      "innerSilences": [
+        [
+          0.0,
+          0.096
+        ],
+        [
+          0.761,
+          0.859
+        ],
+        [
+          1.39,
+          1.676
+        ],
+        [
+          3.765,
+          3.864
+        ]
+      ],
+      "startFrame": 759,
+      "durationFrames": 157,
+      "voStartFrame": 766,
+      "voFrames": 116,
       "chunks": [
         {
           "text": "وإن لم يمسكك أحد…",
-          "startFrame": 640,
-          "endFrame": 679
+          "startFrame": 764,
+          "endFrame": 815
         },
         {
           "text": "ستسقط عائداً إلينا من جديد",
-          "startFrame": 677,
-          "endFrame": 778
+          "startFrame": 813,
+          "endFrame": 914
         }
       ]
     }

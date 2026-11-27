@@ -25,6 +25,7 @@ EXTRA_WEIGHT = {1: 1, 2: 0.6, 3: 1, 4: 1, 5: 1, 6: 1.6, 7: 1.6}
 MIN_SCENE = 2.3
 TARGET_MIN, TARGET_MAX = 26.0, 34.0
 THRESH = "-45dB"
+VOICE_LUFS = -16.0
 
 
 def ffprobe_duration(path):
@@ -39,12 +40,36 @@ def trim(src, dst):
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", src, "-af", af, "-ar", "48000", "-ac", "1", dst], check=True)
 
 
+def loudness(path):
+    err = subprocess.run(["ffmpeg", "-hide_banner", "-i", path, "-af", "ebur128=peak=true", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    summary = err[err.rfind("Summary:"):]
+    return float(re.search(r"I:\s+(-?[0-9.]+) LUFS", summary).group(1)), float(re.search(r"Peak:\s+(-?[0-9.]+) dBFS", summary).group(1))
+
+
+def normalize(path, target=VOICE_LUFS):
+    """Same loudness for every sentence (plain gain; a limiter only if the peak would clip)."""
+    i, _ = loudness(path)
+    tmp = path + ".tmp.wav"
+    gain = target - i
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", path, "-af",
+                    f"volume={gain:.2f}dB,alimiter=limit=0.84:attack=2:release=40:level=false", tmp], check=True)
+    os.replace(tmp, path)
+    return round(i, 1), round(loudness(path)[0], 1)
+
+
 def inner_silences(path):
     err = subprocess.run(["ffmpeg", "-hide_banner", "-i", path, "-af", "silencedetect=noise=-32dB:d=0.09", "-f", "null", "-"],
                          capture_output=True, text=True).stderr
     starts = [float(x) for x in re.findall(r"silence_start: ([0-9.]+)", err)]
     ends = [float(x) for x in re.findall(r"silence_end: ([0-9.]+)", err)]
-    return list(zip(starts, ends))
+    merged = []  # a tiny blip inside a pause must not split it in two
+    for s, e in zip(starts, ends):
+        if merged and s - merged[-1][1] < 0.06:
+            merged[-1] = (merged[-1][0], e)
+        else:
+            merged.append((s, e))
+    return merged
 
 
 def letters(s):
@@ -81,6 +106,8 @@ def main():
         vo = os.path.join(VO, f"s{sc['id']}.wav")
         if os.path.exists(raw):
             trim(raw, vo)
+            before, after = normalize(vo)
+            print(f"  s{sc['id']}: loudness {before} -> {after} LUFS")
             dur, measured, sil = ffprobe_duration(vo), True, inner_silences(vo)
             raw_dur = ffprobe_duration(raw)
         else:
