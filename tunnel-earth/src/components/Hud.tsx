@@ -26,12 +26,14 @@ const Digits: React.FC<{ text: string; size: number; glow?: number }> = ({ text,
     }}
   >
     {[...text].map((ch, i) => (
-      <span key={i} style={{ display: "inline-block", width: size * (/[0-9]/.test(ch) ? 0.58 : 0.28), textAlign: "center" }}>
+      <span key={i} style={{ display: "inline-block", width: size * (/[0-9٠-٩]/.test(ch) ? 0.58 : 0.28), textAlign: "center" }}>
         {ch}
       </span>
     ))}
   </div>
 );
+
+const toArabicDigits = (s: string) => s.replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]);
 
 const fmtTime = (min: number) => {
   const s = Math.round(min * 60);
@@ -169,9 +171,14 @@ export const Hud: React.FC = () => {
 
   // scene 5: the big stopwatch (after the cards have gone and the Earth has started to shrink)
   const D = sStart(5) + 6;
-  const dialO = window01(f, D, sStart(6) + 6, 8, 8);
+  const dialO = window01(f, D, sStart(6) - 4, 8, 8); // gone before the Earth zooms back in
   const sweep = easeOut(lin(f, D + 1, D + 23));
   const dialPop = easeOut(lin(f, D, D + 11));
+  // a heartbeat on the stopwatch half-way through the hold, so the scene keeps moving
+  const B = Math.round((D + 23 + sStart(6) - 12) / 2);
+  const beatT = lin(f, B, B + 14);
+  const beat = beatT > 0 && beatT < 1 ? Math.sin(Math.PI * beatT) : 0;
+  const noteO = lin(f, D + 34, D + 44);
 
   return (
     <>
@@ -207,7 +214,9 @@ export const Hud: React.FC = () => {
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Digits text={fmtTime(min)} size={76} glow={1 + arrived} />
-          <div style={{ fontSize: 26, fontWeight: 700, color: C.white, marginTop: 6, whiteSpace: "nowrap" }}>دقيقة : ثانية</div>
+          <div dir="ltr" style={{ fontSize: 26, fontWeight: 700, color: C.white, marginTop: 6, whiteSpace: "nowrap" }}>
+            دقيقة : ثانية
+          </div>
         </div>
       </Card>
 
@@ -220,11 +229,14 @@ export const Hud: React.FC = () => {
             width: 400,
             height: 400,
             opacity: dialO,
-            scale: String(0.75 + 0.25 * dialPop),
+            scale: String((0.75 + 0.25 * dialPop) * (1 + 0.07 * beat)),
           }}
         >
           <svg width={400} height={400} style={{ position: "absolute", inset: 0 }}>
-            <circle cx={200} cy={200} r={178} fill="rgba(4,14,38,0.88)" stroke={C.cyan} strokeOpacity={0.5} strokeWidth={2} />
+            <circle cx={200} cy={200} r={178} fill="rgba(4,14,38,0.88)" stroke={C.cyan} strokeOpacity={0.5 + 0.5 * beat} strokeWidth={2 + 3 * beat} />
+            {beatT > 0 && beatT < 1 ? (
+              <circle cx={200} cy={200} r={178 + 22 * beatT} fill="none" stroke={C.orange} strokeOpacity={0.7 * (1 - beatT)} strokeWidth={4} />
+            ) : null}
             <circle cx={200} cy={200} r={152} fill="none" stroke={C.cyan} strokeOpacity={0.16} strokeWidth={18} />
             <circle
               cx={200}
@@ -266,7 +278,7 @@ export const Hud: React.FC = () => {
               fontFamily: CAIRO,
             }}
           >
-            <Digits text={String(Math.round(PHYS.halfPeriodMin * sweep))} size={132} glow={1.6} />
+            <Digits text={toArabicDigits(String(Math.round(PHYS.halfPeriodMin * sweep)))} size={132} glow={1.6 + 1.4 * beat} />
             <div dir="rtl" style={{ fontSize: 42, fontWeight: 700, color: C.white, marginTop: 2 }}>
               دقيقة
             </div>
@@ -287,7 +299,7 @@ export const Hud: React.FC = () => {
             fontWeight: 600,
             fontSize: 30,
             color: C.muted,
-            opacity: dialO * lin(f, D + 14, D + 24),
+            opacity: dialO * noteO,
           }}
         >
           * بافتراض أرضٍ متجانسة الكثافة، بلا هواء ولا احتكاك

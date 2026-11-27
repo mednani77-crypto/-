@@ -75,7 +75,7 @@ export const mainDot = (f: number): DotState => {
   if (f >= K.RESET0) {
     const t = lin(f, K.RESET0, K.RESET1);
     const x = mix(0, DOT_REST.x, easeInOut(t));
-    const y = mix(-R, DOT_REST.y, easeInOut(t)) - 52 * Math.sin(Math.PI * t);
+    const y = mix(-R, DOT_REST.y, easeInOut(t)) - 34 * Math.sin(Math.PI * t);
     return { x, y, vx: 1, vy: 0, speed01: 0, trail: 0, inTunnel: false, opacity: 1 };
   }
   const phi = mainPhase(f);
@@ -103,7 +103,7 @@ export const speedKmS = (f: number) => PHYS.vMaxKmS * Math.abs(Math.sin(mainPhas
 export const timerMin = (f: number) => {
   if (f < sStart(6)) return PHYS.halfPeriodMin * uFall(f);
   if (f < sStart(7)) return PHYS.halfPeriodMin * chordU(f);
-  return PHYS.halfPeriodMin * (1 + lin(f, K.FC, K.FD));
+  return PHYS.halfPeriodMin * lin(f, K.FC, K.FD); // the way back is another 00:00 -> 42:00
 };
 
 // ---------- the main tunnel ----------
@@ -121,7 +121,7 @@ export const CHORDS: Chord[] = [
   { a: 300, b: 120, hue: "#38E8FF" }, // through the centre: the longest
   { a: 200, b: 70, hue: "#8BF4FF" }, // 0.91 of the diameter
   { a: 160, b: 255, hue: "#5FD0FF" }, // 0.74
-  { a: 330, b: 30, hue: "#B8F9FF" }, // 0.50: short, close to the surface
+  { a: 320, b: 20, hue: "#B8F9FF" }, // 0.50: short, close to the surface
 ];
 const onCircle = (deg: number) => ({ x: R * Math.cos((deg * Math.PI) / 180), y: R * Math.sin((deg * Math.PI) / 180) });
 export const chordGeom = (c: Chord) => {
@@ -163,11 +163,11 @@ const CAM: CamKey[] = [
   [K.FM + 52, 1, 0, 0],
   [sStart(5) - 6, 1, 0, 0],
   [sStart(5) + 9, 0.62, 0, -178],
-  [sStart(6) - 6, 0.62, 0, -178],
-  [sStart(6) + 9, 1, 0, 0],
+  [sStart(6) - 4, 0.655, 0, -185], // slow push while the stopwatch is shown
+  [sStart(6) + 11, 1, 0, 0],
   [TOTAL, 1, 0, 0],
 ];
-export const camera = (f: number) => {
+const baseCamera = (f: number) => {
   for (let i = 0; i < CAM.length - 1; i++) {
     const [a, s0, x0, y0] = CAM[i];
     const [b, s1, x1, y1] = CAM[i + 1];
@@ -177,6 +177,15 @@ export const camera = (f: number) => {
     }
   }
   return { s: 1, tx: 0, ty: 0 };
+};
+/**
+ * During the first crossing the zoom pivots on the traveller (not on the Earth's centre), so its
+ * screen position is exactly its un-zoomed SHM position: it never stalls or moves backwards on screen.
+ */
+export const camera = (f: number) => {
+  const c = baseCamera(f);
+  if (f > K.FA && f < K.FB) c.ty -= (c.s - 1) * -R * Math.cos(Math.PI * uFall(f));
+  return c;
 };
 /** Local stage point -> screen pixels. */
 export const toScreen = (f: number, x: number, y: number) => {

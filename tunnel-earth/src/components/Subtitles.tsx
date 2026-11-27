@@ -4,30 +4,34 @@ import { C, CAIRO, H, SAFE, SAFE_W } from "../theme";
 import { SCENES, TOTAL, easeOut, lin } from "../lib/timeline";
 import { ArabicText } from "./ArabicText";
 
-type Cue = { text: string; from: number; to: number; fadeOut: boolean; continues: boolean };
-
 /** Keep a number and the word after it on the same line ("٨ كيلومترات"). */
-const bindNumbers = (t: string) => t.replace(/([٠-٩0-9][٠-٩0-9.,٫]*) /g, "$1\u00A0");
+const bindNumbers = (t: string) => t.replace(/([٠-٩0-9][٠-٩0-9.,٫]*) /g, "$1 ");
 
-const CUES: Cue[] = SCENES.flatMap((s, si) =>
-  s.chunks.map((c, ci) => {
-    const last = ci === s.chunks.length - 1;
+type Sentence = { from: number; to: number; chunks: { text: string; from: number; to: number }[] };
+
+const SENTENCES: Sentence[] = SCENES.map((s, si) => {
+  const chunks = s.chunks.map((c, ci) => {
     const next = s.chunks[ci + 1];
-    const end = next ? next.startFrame : c.endFrame; // hand over exactly when the next chunk starts
-    const to = si === SCENES.length - 1 && last ? Math.min(end, TOTAL - 14) : end;
-    return { text: bindNumbers(c.text), from: c.startFrame, to, fadeOut: last, continues: ci > 0 };
-  }),
-);
+    return { text: bindNumbers(c.text), from: c.startFrame, to: next ? next.startFrame : c.endFrame };
+  });
+  const last = chunks[chunks.length - 1];
+  if (si === SCENES.length - 1) last.to = Math.min(last.to, TOTAL - 14); // empty at the loop point
+  return { from: chunks[0].from, to: last.to, chunks };
+});
 
-/** Captions synced to the voice, sitting right on top of the bottom safe zone. */
+const XF = 2; // fade-in of the next chunk of the same sentence, in frames
+
+/**
+ * Captions synced to the voice, sitting right on top of the bottom safe zone.
+ * All chunks of a sentence are stacked in the same grid cell, so the box keeps one size for the
+ * whole sentence and the text simply cross-fades when the next chunk is spoken.
+ */
 export const Subtitles: React.FC = () => {
   const f = useCurrentFrame();
-  const cue = CUES.find((c) => f >= c.from && f < c.to);
-  if (!cue) return null;
-  // a new sentence slides in; the next chunk of the same sentence only cross-fades its text
-  const inT = cue.continues ? 1 : easeOut(lin(f, cue.from, cue.from + 6));
-  const textIn = cue.continues ? easeOut(lin(f, cue.from, cue.from + 4)) : 1;
-  const outT = cue.fadeOut ? lin(f, cue.to - 5, cue.to) : 0;
+  const s = SENTENCES.find((x) => f >= x.from && f < x.to);
+  if (!s) return null;
+  const inT = easeOut(lin(f, s.from, s.from + 6));
+  const outT = lin(f, s.to - 5, s.to);
   return (
     <div
       style={{
@@ -55,15 +59,22 @@ export const Subtitles: React.FC = () => {
           lineHeight: 1.4,
           color: C.white,
           textAlign: "center",
-          textWrap: "balance",
+          display: "grid",
           opacity: inT * (1 - outT),
           translate: `0 ${(1 - inT) * 18}px`,
           scale: String(0.96 + 0.04 * inT),
         }}
       >
-        <span style={{ opacity: textIn }}>
-          <ArabicText text={cue.text} numberGlow={false} />
-        </span>
+        {s.chunks.map((c, i) => {
+          // hand-over without overlap or an empty box: old text 1 -> 0.5 -> 0, new text 0 -> 0.5 -> 1
+          const fadeIn = i === 0 ? 1 : lin(f, c.from, c.from + XF);
+          const fadeOut = i === s.chunks.length - 1 ? 1 : 1 - lin(f, c.to - 1, c.to + 1);
+          return (
+            <div key={i} style={{ gridArea: "1 / 1", alignSelf: "center", textWrap: "balance", opacity: Math.min(fadeIn, fadeOut) }}>
+              <ArabicText text={c.text} numberGlow={false} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

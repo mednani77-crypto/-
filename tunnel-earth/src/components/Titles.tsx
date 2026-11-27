@@ -3,6 +3,7 @@ import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { C, CAIRO, SAFE, SAFE_W } from "../theme";
 import { TOTAL, chunkAt, easeIn, lin, sEnd, sMid, sStart } from "../lib/timeline";
 import { ArabicText } from "./ArabicText";
+import { K } from "../lib/state";
 
 type TitleDef = {
   lines: string[][];
@@ -28,7 +29,7 @@ const TITLES = (): TitleDef[] => [
   { lines: [["٤٢", "دقيقة", "فقط!"]], from: sStart(5) + 3, to: sEnd(5), size: 112 },
   { lines: [["أيُّ", "نفقٍ", "مستقيمٍ…"]], from: sStart(6) + 3, to: chunkAt(6, 1) + 4, size: 88 },
   { lines: [["المدةُ", "نفسُها!"]], from: chunkAt(6, 1) + 6, to: sEnd(6), size: 112 },
-  { lines: [["ذهابٌ", "وإيابٌ…"], ["بلا", "نهاية"]], from: sStart(7) + 3, to: TOTAL - 4 },
+  { lines: [["ذهابٌ", "وإيابٌ…"], ["بلا", "نهاية"]], from: sStart(7) + 3, to: K.FD - 4 },
 ];
 
 const STAGGER = 5;

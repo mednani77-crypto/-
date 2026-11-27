@@ -55,8 +55,11 @@ export const StageLabels: React.FC = () => {
   const youPos = toScreen(f, DOT_REST.x + 74, DOT_REST.y - 28);
 
   // layer names during scene 1
+  // the crust is the thin rim, so its label sits just outside it with a short leader line
+  const crustA = (-128 * Math.PI) / 180;
+  const polar = (r: number) => ({ x: r * Math.cos(crustA), y: r * Math.sin(crustA) });
   const layers = [
-    { text: "القشرة", x: -168, y: -252, at: K.D0 + 4 },
+    { text: "القشرة", x: polar(394).x, y: polar(394).y, at: K.D0 + 4 },
     { text: "الوشاح", x: -228, y: -46, at: K.D0 + 12 },
     { text: "اللُّب", x: -92, y: 96, at: K.D0 + 20 },
   ];
@@ -66,8 +69,18 @@ export const StageLabels: React.FC = () => {
   const gO = window01(f, K.FA + 8, sStart(3) - 4, 8, 8);
   const gPos = toScreen(f, 142, d.y + (d.y > 0 ? -1 : 1) * 0.18 * Math.abs(d.y));
 
+  const crustO = window01(f, K.D0 + 4, layerEnd, 6, 8);
+  const l0 = toScreen(f, polar(332).x, polar(332).y);
+  const l1 = toScreen(f, polar(364).x, polar(364).y);
+
   return (
     <>
+      {crustO > 0.001 ? (
+        <svg width={1080} height={1920} style={{ position: "absolute", inset: 0, opacity: crustO }}>
+          <line x1={l0.x} y1={l0.y} x2={l1.x} y2={l1.y} stroke={C.cyanSoft} strokeWidth={3} strokeLinecap="round" />
+          <circle cx={l0.x} cy={l0.y} r={5} fill={C.cyanSoft} />
+        </svg>
+      ) : null}
       <Pill x={youPos.x} y={youPos.y} text="أنت" opacity={you} pop={1} size={38} color={C.cyanSoft} />
       {layers.map((l) => {
         const p = toScreen(f, l.x, l.y);

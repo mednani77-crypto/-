@@ -7,7 +7,8 @@ IN=${1:-out/tunnel-earth-raw.mp4}
 OUT=${2:-out/tunnel-earth.mp4}
 M=$(ffmpeg -hide_banner -i "$IN" -af loudnorm=I=-14:TP=-1.0:LRA=11:print_format=json -f null - 2>&1 | sed -n '/^{/,/^}/p')
 get() { echo "$M" | python3 -c "import json,sys; print(json.load(sys.stdin)['$1'])"; }
-ffmpeg -loglevel error -y -i "$IN" -c:v copy \
+VDUR=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of csv=p=0 "$IN")
+ffmpeg -loglevel error -y -i "$IN" -t "$VDUR" -c:v copy \
   -af "loudnorm=I=-14:TP=-1.0:LRA=11:measured_I=$(get input_i):measured_TP=$(get input_tp):measured_LRA=$(get input_lra):measured_thresh=$(get input_thresh):offset=$(get target_offset):linear=true,aresample=48000" \
   -c:a aac -b:a 192k -movflags +faststart "$OUT"
 echo "before: I=$(get input_i) LUFS, TP=$(get input_tp) dBTP"

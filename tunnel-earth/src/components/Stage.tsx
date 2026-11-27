@@ -212,7 +212,7 @@ export const Stage: React.FC = () => {
 
         {/* ---- scene 3: speed streaks through the zoomed centre ---- */}
         {streaks > 0 ? (
-          <g opacity={streaks}>
+          <g opacity={streaks} clipPath="url(#earthClip)">
             {new Array(18).fill(0).map((_, i) => {
               const x = (random(`lx${i}`) - 0.5) * 300;
               const len = 50 + random(`ll${i}`) * 110;
@@ -255,9 +255,9 @@ export const Stage: React.FC = () => {
             ))
           : null}
         <Ring x={0} y={-R} f={f} at={K.H1 - 2} />
-        <Ring x={0} y={R} f={f} at={K.FB - 2} />
+        <Ring x={0} y={R} f={f} at={K.FB - 2} max={44} />
         <Ring x={0} y={0} f={f} at={K.FM - 8} color={C.cyan} max={120} />
-        <Ring x={0} y={-R} f={f} at={K.FD - 2} />
+        <Ring x={0} y={-R} f={f} at={K.FD - 2} max={48} />
         <Dot d={dot} id="main" />
       </g>
     </svg>
