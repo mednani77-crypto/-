@@ -141,30 +141,37 @@ export const Hud: React.FC = () => {
   const v = speedKmS(f);
   const min = timerMin(f);
 
-  // speed card: first crossing (scenes 2-4) and the way back (scene 7)
-  const sA = window01(f, sStart(2), sStart(5) + 6, 10, 8);
-  const sB = window01(f, sStart(7) + 4, K.FD + 10, 10, 10);
+  // the read-outs appear while the traveller jumps in, so they start from 0.0 km/s and 00:00
+  const IN = K.FA - 6;
+  // speed card: first crossing (scenes 1-4) and the way back (scene 7)
+  const SB0 = sStart(7) + 6; // after the timer card has slid out of the way
+  const sA = window01(f, IN, sStart(5), 8, 8);
+  const sB = window01(f, SB0, K.FD + 4, 10, 8);
   const speedO = Math.max(sA, sB);
-  const speedLift = f < sStart(5) + 6 ? easeOut(lin(f, sStart(2), sStart(2) + 12)) : easeOut(lin(f, sStart(7) + 4, sStart(7) + 16));
-  const hot = window01(f, sStart(3) + 6, sEnd(3), 8, 10); // scene 3: the peak speed
+  const speedLift = f < sStart(5) ? easeOut(lin(f, IN, IN + 12)) : easeOut(lin(f, SB0, SB0 + 12));
+  const hot = window01(f, K.FM - 26, K.FM + 30, 8, 10); // peak speed through the centre: glow only
 
-  // timer card: scenes 2-4 (left), scene 6 (centre), scene 7 (back to the left)
-  const tA = window01(f, sStart(2), sStart(5) + 6, 10, 8);
-  const tB = window01(f, sStart(6) + 8, K.FD + 10, 10, 10);
+  // timer card: scenes 1-4 (left), scene 6 (centre), scene 7 (back to the left)
+  const tA = window01(f, IN, sStart(5), 8, 8);
+  const tB = window01(f, sStart(6) + 8, K.FD + 4, 10, 8);
   const timerO = Math.max(tA, tB);
-  const timerX =
-    f < sStart(6) ? SLOT_LEFT : mix(SLOT_CENTER, SLOT_LEFT, easeInOut(lin(f, sStart(7) + 2, sStart(7) + 16)));
-  const timerLift = f < sStart(6) ? easeOut(lin(f, sStart(2), sStart(2) + 12)) : easeOut(lin(f, sStart(6) + 8, sStart(6) + 20));
-  const lap = f >= sStart(7) ? (min - PHYS.halfPeriodMin) / PHYS.halfPeriodMin : min / PHYS.halfPeriodMin;
-  const arrived = window01(f, K.G1, sEnd(6) + 2, 2, 8);
+  const slide = easeInOut(lin(f, sStart(7) - 10, sStart(7) + 4));
+  const timerX = f < sStart(6) ? SLOT_LEFT : mix(SLOT_CENTER, SLOT_LEFT, slide);
+  const timerLift = f < sStart(6) ? easeOut(lin(f, IN, IN + 12)) : easeOut(lin(f, sStart(6) + 8, sStart(6) + 20));
+  const lap =
+    f < sStart(7) - 10
+      ? min / PHYS.halfPeriodMin
+      : mix(1, Math.max(0, (min - PHYS.halfPeriodMin) / PHYS.halfPeriodMin), slide); // ring resets during the slide
+  const arrived = window01(f, K.G1, sEnd(6) - 4, 2, 8);
 
   // scene 1 (and the loop point): how long the tunnel is — the Earth's diameter
-  const lenO = Math.max(1 - lin(f, sEnd(1) - 8, sEnd(1)), lin(f, TOTAL - 16, TOTAL - 4));
+  const lenO = Math.max(1 - lin(f, K.H0, IN), lin(f, TOTAL - 12, TOTAL - 3));
 
-  // scene 5: the big stopwatch
-  const dialO = window01(f, sStart(5) + 3, sStart(6) + 6, 8, 8);
-  const sweep = easeOut(lin(f, sStart(5) + 4, sStart(5) + 26));
-  const dialPop = easeOut(lin(f, sStart(5) + 3, sStart(5) + 14));
+  // scene 5: the big stopwatch (after the cards have gone and the Earth has started to shrink)
+  const D = sStart(5) + 6;
+  const dialO = window01(f, D, sStart(6) + 6, 8, 8);
+  const sweep = easeOut(lin(f, D + 1, D + 23));
+  const dialPop = easeOut(lin(f, D, D + 11));
 
   return (
     <>
@@ -182,7 +189,7 @@ export const Hud: React.FC = () => {
         </div>
       </Card>
 
-      <Card x={SLOT_RIGHT} opacity={speedO} lift={speedLift} scale={1 + 0.06 * hot} glow={hot}>
+      <Card x={SLOT_RIGHT} opacity={speedO} lift={speedLift} glow={hot}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
           <Label text="السرعة" />
           <Gauge v01={Math.min(1, v / 8)} />
@@ -200,7 +207,7 @@ export const Hud: React.FC = () => {
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Digits text={fmtTime(min)} size={76} glow={1 + arrived} />
-          <div style={{ fontSize: 32, fontWeight: 700, color: C.white, marginTop: 4 }}>دقيقة</div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: C.white, marginTop: 6, whiteSpace: "nowrap" }}>دقيقة : ثانية</div>
         </div>
       </Card>
 
@@ -236,10 +243,10 @@ export const Hud: React.FC = () => {
               return (
                 <line
                   key={i}
-                  x1={200 + 120 * Math.cos(a)}
-                  y1={200 + 120 * Math.sin(a)}
-                  x2={200 + (i % 3 === 0 ? 106 : 112) * Math.cos(a)}
-                  y2={200 + (i % 3 === 0 ? 106 : 112) * Math.sin(a)}
+                  x1={200 + 132 * Math.cos(a)}
+                  y1={200 + 132 * Math.sin(a)}
+                  x2={200 + (i % 3 === 0 ? 118 : 124) * Math.cos(a)}
+                  y2={200 + (i % 3 === 0 ? 118 : 124) * Math.sin(a)}
                   stroke={C.cyanSoft}
                   strokeOpacity={0.75}
                   strokeWidth={i % 3 === 0 ? 4 : 2.5}
@@ -259,11 +266,31 @@ export const Hud: React.FC = () => {
               fontFamily: CAIRO,
             }}
           >
-            <Digits text={fmtTime(PHYS.halfPeriodMin * sweep)} size={104} glow={1.6} />
-            <div dir="rtl" style={{ fontSize: 40, fontWeight: 700, color: C.white, marginTop: 6 }}>
+            <Digits text={String(Math.round(PHYS.halfPeriodMin * sweep))} size={132} glow={1.6} />
+            <div dir="rtl" style={{ fontSize: 42, fontWeight: 700, color: C.white, marginTop: 2 }}>
               دقيقة
             </div>
           </div>
+        </div>
+      ) : null}
+      {dialO > 0.001 ? (
+        <div
+          dir="rtl"
+          lang="ar"
+          style={{
+            position: "absolute",
+            left: SAFE.left,
+            width: SAFE.right - SAFE.left,
+            top: 1356,
+            textAlign: "center",
+            fontFamily: CAIRO,
+            fontWeight: 600,
+            fontSize: 30,
+            color: C.muted,
+            opacity: dialO * lin(f, D + 14, D + 24),
+          }}
+        >
+          * بافتراض أرضٍ متجانسة الكثافة، بلا هواء ولا احتكاك
         </div>
       ) : null}
     </>

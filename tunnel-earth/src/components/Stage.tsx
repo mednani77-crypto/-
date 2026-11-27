@@ -1,7 +1,7 @@
 import React from "react";
 import { random, useCurrentFrame } from "remotion";
 import { C, EARTH, H, W } from "../theme";
-import { TOTAL, lin, sEnd, sStart, window01 } from "../lib/timeline";
+import { TOTAL, lin, sStart, window01 } from "../lib/timeline";
 import {
   CHORDS,
   DotState,
@@ -20,7 +20,7 @@ const R = EARTH.R;
 const TW = 10; // tunnel half width
 
 const Dot: React.FC<{ d: DotState; id: string; color?: string; size?: number }> = ({ d, id, color = C.cyan, size = 1 }) => {
-  const tail = 230 * d.speed01 * size;
+  const tail = Math.min(230 * d.speed01 * size, d.trail); // never longer than the path behind it
   const hx = d.x - d.vx * tail;
   const hy = d.y - d.vy * tail;
   return (
@@ -65,14 +65,14 @@ export const Stage: React.FC = () => {
   const chordsO = chordsVisible(f);
 
   // gravity pulls toward the centre with a force proportional to the distance
-  const arrowO =
-    dot.inTunnel && (f < sStart(5) || f >= sStart(7) + 8) && f < K.FD
-      ? Math.min(1, Math.abs(dot.y) / 45) * window01(f, K.FA + 4, K.FD, 8, 6)
-      : 0;
+  const arrowO = dot.inTunnel
+    ? Math.min(1, Math.abs(dot.y) / 45) *
+      Math.max(window01(f, K.FA + 4, sStart(5), 8, 8), window01(f, K.FC, K.FD, 8, 6))
+    : 0;
   const arrowLen = 0.36 * Math.abs(dot.y);
   const arrowDir = dot.y > 0 ? -1 : 1;
 
-  const streaks = window01(f, sStart(3) + 4, sEnd(3) + 2, 6, 8);
+  const streaks = window01(f, K.FM - 30, K.FM + 40, 8, 10);
 
   return (
     <svg width={W} height={H} style={{ position: "absolute", inset: 0 }}>

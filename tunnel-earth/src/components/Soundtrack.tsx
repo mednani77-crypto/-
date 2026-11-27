@@ -3,9 +3,13 @@ import { Audio } from "@remotion/media";
 import { Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { SCENES, TIMING, TOTAL } from "../lib/timeline";
 
-const Music: React.FC<{ src: string; volume: number }> = ({ src, volume }) => {
+const Music: React.FC<{ src: string; volume: number; seamless: boolean }> = ({ src, volume, seamless }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  if (seamless) {
+    // already cut to the video length with its tail cross-faded into its head: constant level, no fades
+    return <Audio name="Music" src={staticFile(src)} volume={volume} />;
+  }
   return (
     <Audio
       name="Music"
@@ -44,7 +48,7 @@ export const Soundtrack: React.FC = () => {
             </Sequence>
           ))
         : null}
-      {TIMING.music ? <Music src={TIMING.music.file} volume={TIMING.music.volume} /> : null}
+      {TIMING.music ? <Music src={TIMING.music.file} volume={TIMING.music.volume} seamless={TIMING.music.seamless} /> : null}
     </>
   );
 };

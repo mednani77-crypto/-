@@ -3,14 +3,16 @@
   "width": 1080,
   "height": 1920,
   "measured": true,
-  "totalFrames": 916,
-  "totalSec": 30.533,
+  "totalFrames": 907,
+  "totalSec": 30.233,
   "voice": "Fenrir",
   "ttsModel": "gemini-3.8-flash-tts",
   "music": {
-    "file": "music/bg.mp3",
+    "file": "music/bg_loop.wav",
     "volume": 0.1,
-    "durationSec": 30.816
+    "seamless": true,
+    "crossfadeSec": 0.539,
+    "durationSec": 30.233
   },
   "whoosh": {
     "file": "sfx/whoosh.wav",
@@ -228,7 +230,7 @@
         ]
       ],
       "startFrame": 759,
-      "durationFrames": 157,
+      "durationFrames": 148,
       "voStartFrame": 766,
       "voFrames": 116,
       "chunks": [
@@ -240,7 +242,7 @@
         {
           "text": "ستسقط عائداً إلينا من جديد",
           "startFrame": 813,
-          "endFrame": 914
+          "endFrame": 905
         }
       ]
     }

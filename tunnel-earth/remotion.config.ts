@@ -16,6 +16,7 @@ Config.setDefaultPremountInSeconds(2);
 Config.setCodec("h264");
 Config.setCrf(17);
 Config.setPixelFormat("yuv420p");
+Config.setColorSpace("bt709");
 Config.setAudioCodec("aac");
 Config.setAudioBitrate("192k");
 

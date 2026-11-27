@@ -20,7 +20,7 @@ OUT = os.path.join(ROOT, "src", "data", "timing.json")
 
 # seconds of picture before the voice starts / after it ends, per scene
 LEAD = {1: 0.20, 2: 0.22, 3: 0.22, 4: 0.22, 5: 0.22, 6: 0.22, 7: 0.22}
-TAIL = {1: 0.50, 2: 0.25, 3: 0.40, 4: 0.50, 5: 0.65, 6: 0.85, 7: 1.15}
+TAIL = {1: 0.50, 2: 0.25, 3: 0.40, 4: 0.50, 5: 0.65, 6: 0.85, 7: 0.85}
 EXTRA_WEIGHT = {1: 1, 2: 0.6, 3: 1, 4: 1, 5: 1, 6: 1.6, 7: 1.6}
 MIN_SCENE = 2.3
 TARGET_MIN, TARGET_MAX = 26.0, 34.0
@@ -56,6 +56,25 @@ def normalize(path, target=VOICE_LUFS):
                     f"volume={gain:.2f}dB,alimiter=limit=0.84:attack=2:release=40:level=false", tmp], check=True)
     os.replace(tmp, path)
     return round(i, 1), round(loudness(path)[0], 1)
+
+
+def make_music_loop(src, dst, seconds, sr=48000):
+    """Cut the music to exactly the video length and cross-fade the material just after the cut
+    into the head (equal-power), so the end of the video flows into its start with no gap or fade."""
+    import numpy as np
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", src, "-f", "f32le", "-ac", "2", "-ar", str(sr), "-"],
+                         capture_output=True, check=True).stdout
+    a = np.frombuffer(raw, dtype=np.float32).reshape(-1, 2)
+    n = int(round(seconds * sr))
+    x = min(int(0.6 * sr), len(a) - n - 1)
+    if x < int(0.08 * sr):
+        return None
+    out = a[:n].copy()
+    ramp = np.linspace(0, np.pi / 2, x, endpoint=False)[:, None]
+    out[:x] = a[:x] * np.sin(ramp) + a[n:n + x] * np.cos(ramp)
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "f32le", "-ac", "2", "-ar", str(sr), "-i", "-",
+                    "-c:a", "pcm_s16le", dst], input=out.astype(np.float32).tobytes(), check=True)
+    return round(x / sr, 3)
 
 
 def inner_silences(path):
@@ -154,13 +173,18 @@ def main():
 
     total_frames = scenes[-1]["startFrame"] + scenes[-1]["durationFrames"]
     music = os.path.join(ROOT, "public", "music", "bg.mp3")
+    loop = os.path.join(ROOT, "public", "music", "bg_loop.wav")
+    xfade = make_music_loop(music, loop, total_frames / FPS) if os.path.exists(music) else None
     whoosh = os.path.join(ROOT, "public", "sfx", "whoosh.wav")
     data = {
         "fps": FPS, "width": 1080, "height": 1920,
         "measured": all(r["measured"] for r in rows),
         "totalFrames": total_frames, "totalSec": round(total_frames / FPS, 3),
         "voice": SCRIPT["voice"], "ttsModel": SCRIPT["ttsModel"],
-        "music": {"file": "music/bg.mp3", "volume": 0.10, "durationSec": round(ffprobe_duration(music), 3)} if os.path.exists(music) else None,
+        "music": ({"file": "music/bg_loop.wav", "volume": 0.10, "seamless": True, "crossfadeSec": xfade,
+                   "durationSec": round(ffprobe_duration(loop), 3)} if xfade else
+                  {"file": "music/bg.mp3", "volume": 0.10, "seamless": False, "durationSec": round(ffprobe_duration(music), 3)})
+                 if os.path.exists(music) else None,
         "whoosh": {"file": "sfx/whoosh.wav", "volume": 0.32, "durationSec": round(ffprobe_duration(whoosh), 3), "peakSec": 0.36} if os.path.exists(whoosh) else None,
         "scenes": scenes,
     }

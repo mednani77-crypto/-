@@ -17,7 +17,6 @@ import {
   lin,
   mix,
   sEnd,
-  sMid,
   sStart,
   voEnd,
 } from "./timeline";
@@ -27,8 +26,8 @@ const R = EARTH.R;
 // ---------- key frames ----------
 export const K = (() => {
   const FA = Math.min(chunkAt(1, 1) + 18, sStart(2)); // the fall begins (= when the jump lands)
-  const FM = sMid(3); // passing the centre
   const FB = sEnd(4) - 8; // arrival at the far side
+  const FM = Math.round((FA + FB) / 2); // passing the centre (real SHM: exactly half way in time)
   const D0 = sStart(1) + 10; // drilling starts
   const D1 = Math.max(D0 + 24, chunkAt(1, 1) - 3); // drilling ends as "وقفزتَ فيه" starts
   const H0 = Math.min(chunkAt(1, 1) + 2, sStart(2) - 16); // the jump starts on "وقفزتَ"
@@ -42,25 +41,9 @@ export const K = (() => {
   return { FA, FM, FB, D0, D1, H0, H1, G0, G1, FC, FD, RESET0, RESET1 };
 })();
 
-// ---------- simulation clock for the first crossing (with slow motion at the centre) ----------
-const SIGMA = Math.max(8, (sEnd(3) - sStart(3)) * 0.3);
-const rate = (f: number) => 1 - 0.8 * Math.exp(-(((f - K.FM) / SIGMA) ** 2));
-const CUM: number[] = (() => {
-  const c = new Array(TOTAL + 2).fill(0);
-  for (let f = 1; f < c.length; f++) c[f] = c[f - 1] + (f - 1 >= K.FA && f - 1 < K.FB ? rate(f - 1 + 0.5) : 0);
-  return c;
-})();
-const cumAt = (f: number) => {
-  const i = Math.max(0, Math.min(CUM.length - 2, Math.floor(f)));
-  return CUM[i] + (CUM[i + 1] - CUM[i]) * (f - i);
-};
+// ---------- simulation clock: uniform, so the motion on screen is true SHM (fastest at the centre) ----------
 /** Fraction of the first crossing completed, 0 → 1. */
-export const uFall = (f: number) => {
-  if (f <= K.FA) return 0;
-  if (f >= K.FB) return 1;
-  if (f <= K.FM) return (0.5 * (cumAt(f) - cumAt(K.FA))) / (cumAt(K.FM) - cumAt(K.FA));
-  return 0.5 + (0.5 * (cumAt(f) - cumAt(K.FM))) / (cumAt(K.FB) - cumAt(K.FM));
-};
+export const uFall = (f: number) => lin(f, K.FA, K.FB);
 
 /** Phase φ of the main traveller (0 at the top, π at the bottom, 2π back at the top). */
 export const mainPhase = (f: number) => {
@@ -74,25 +57,26 @@ export type DotState = {
   vx: number; // unit direction of motion
   vy: number;
   speed01: number; // physical speed / max speed
+  trail: number; // longest motion trail allowed: the distance actually travelled (local px)
   inTunnel: boolean;
   opacity: number;
 };
 
 export const mainDot = (f: number): DotState => {
   // standing on the surface (start and end of the loop)
-  if (f < K.H0) return { x: DOT_REST.x, y: DOT_REST.y, vx: 0, vy: 1, speed01: 0, inTunnel: false, opacity: 1 };
+  if (f < K.H0) return { x: DOT_REST.x, y: DOT_REST.y, vx: 0, vy: 1, speed01: 0, trail: 0, inTunnel: false, opacity: 1 };
   if (f < K.H1) {
     const t = lin(f, K.H0, K.H1);
     const e = easeInOut(t);
     const x = mix(DOT_REST.x, 0, e);
     const y = mix(DOT_REST.y, -R, easeInOut(t)) - 62 * Math.sin(Math.PI * Math.min(1, t * 1.05));
-    return { x, y, vx: -1, vy: 0, speed01: 0, inTunnel: false, opacity: 1 };
+    return { x, y, vx: -1, vy: 0, speed01: 0, trail: 0, inTunnel: false, opacity: 1 };
   }
   if (f >= K.RESET0) {
     const t = lin(f, K.RESET0, K.RESET1);
     const x = mix(0, DOT_REST.x, easeInOut(t));
     const y = mix(-R, DOT_REST.y, easeInOut(t)) - 52 * Math.sin(Math.PI * t);
-    return { x, y, vx: 1, vy: 0, speed01: 0, inTunnel: false, opacity: 1 };
+    return { x, y, vx: 1, vy: 0, speed01: 0, trail: 0, inTunnel: false, opacity: 1 };
   }
   const phi = mainPhase(f);
   const y = -R * Math.cos(phi);
@@ -106,6 +90,7 @@ export const mainDot = (f: number): DotState => {
     vx: 0,
     vy: dir,
     speed01: Math.abs(Math.sin(phi)),
+    trail: dir > 0 ? y + R : R - y,
     inTunnel: true,
     opacity: parked ? mix(1, 0.35, dimIn) : f >= sStart(7) ? mix(0.35, 1, dimOut) : 1,
   };
@@ -161,6 +146,7 @@ export const chordDot = (f: number, c: Chord): DotState => {
     vx: g.tx,
     vy: g.ty,
     speed01: (Math.abs(Math.sin(phi)) * g.L) / R,
+    trail: g.L * (1 - Math.cos(phi)),
     inTunnel: true,
     opacity: 1,
   };
@@ -171,14 +157,14 @@ type CamKey = [frame: number, scale: number, tx: number, ty: number];
 const CAM: CamKey[] = [
   [0, 1, 0, 0],
   [sStart(2), 1, 0, 0],
-  [sStart(3) - 2, 1.07, 0, 0],
-  [sStart(3) + 12, 1.85, 0, 0],
-  [sEnd(3) - 2, 1.95, 0, 0],
-  [sStart(4) + 15, 1, 0, 0],
-  [sStart(5), 1, 0, 0],
-  [sStart(5) + 14, 0.62, 0, -178],
-  [sStart(6), 0.62, 0, -178],
-  [sStart(6) + 14, 1, 0, 0],
+  [K.FM - 44, 1.05, 0, 0],
+  [K.FM - 10, 1.85, 0, 0],
+  [K.FM + 10, 1.9, 0, 0],
+  [K.FM + 52, 1, 0, 0],
+  [sStart(5) - 6, 1, 0, 0],
+  [sStart(5) + 9, 0.62, 0, -178],
+  [sStart(6) - 6, 0.62, 0, -178],
+  [sStart(6) + 9, 1, 0, 0],
   [TOTAL, 1, 0, 0],
 ];
 export const camera = (f: number) => {

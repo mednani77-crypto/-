@@ -64,7 +64,7 @@ export const StageLabels: React.FC = () => {
 
   // "الجاذبية" beside the force arrow at the start of the fall
   const gO = window01(f, K.FA + 8, sStart(3) - 4, 8, 8);
-  const gPos = toScreen(f, 108, d.y + (d.y > 0 ? -1 : 1) * 0.18 * Math.abs(d.y));
+  const gPos = toScreen(f, 142, d.y + (d.y > 0 ? -1 : 1) * 0.18 * Math.abs(d.y));
 
   return (
     <>

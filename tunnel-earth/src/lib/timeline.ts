@@ -19,7 +19,7 @@ export const TIMING = timing as unknown as {
   height: number;
   measured: boolean;
   totalFrames: number;
-  music: { file: string; volume: number; durationSec: number } | null;
+  music: { file: string; volume: number; durationSec: number; seamless: boolean } | null;
   whoosh: { file: string; volume: number; durationSec: number; peakSec: number } | null;
   scenes: SceneTiming[];
 };

@@ -15,8 +15,8 @@ type TitleDef = {
 };
 
 const TITLES = (): TitleDef[] => [
-  // Scene 1's headline is already on screen at frame 0 (it popped in at the end of the previous loop)
-  { lines: [["نفقٌ", "عبرَ", "الأرض"]], from: sStart(1), to: sEnd(1), mode: "beat" },
+  // frame 0 has an empty headline area, like the last frame, so the loop is seamless
+  { lines: [["نفقٌ", "عبرَ", "الأرض"]], from: sStart(1) + 1, to: sEnd(1) },
   { lines: [["سقوطٌ", "نحو", "المركز"]], from: sStart(2) + 3, to: sEnd(2) },
   {
     lines: [["قرابةَ", "٨", "كم"], ["في", "الثانية!"]],
@@ -24,20 +24,18 @@ const TITLES = (): TitleDef[] => [
     to: sEnd(3),
     sub: { text: "أي نحو ٢٨ ألف كم في الساعة", from: sMid(3) - 4 },
   },
-  { lines: [["تباطؤٌ", "حتى", "التوقف"]], from: sStart(4) + 3, to: sEnd(4) },
+  { lines: [["تباطؤٌ", "حتى", "التوقف"]], from: sStart(4) + 3, to: sEnd(4), size: 86 },
   { lines: [["٤٢", "دقيقة", "فقط!"]], from: sStart(5) + 3, to: sEnd(5), size: 112 },
-  { lines: [["أيُّ", "نفقٍ", "مستقيم…"]], from: sStart(6) + 3, to: chunkAt(6, 1) + 4, size: 90 },
+  { lines: [["أيُّ", "نفقٍ", "مستقيمٍ…"]], from: sStart(6) + 3, to: chunkAt(6, 1) + 4, size: 88 },
   { lines: [["المدةُ", "نفسُها!"]], from: chunkAt(6, 1) + 6, to: sEnd(6), size: 112 },
-  { lines: [["ذهابٌ", "وإيابٌ…"], ["بلا", "نهاية"]], from: sStart(7) + 3, to: TOTAL - 31 },
-  // loop reprise: scene 1's headline returns so the last frame flows into frame 0
-  { lines: [["نفقٌ", "عبرَ", "الأرض"]], from: TOTAL - 30, to: TOTAL + 1 },
+  { lines: [["ذهابٌ", "وإيابٌ…"], ["بلا", "نهاية"]], from: sStart(7) + 3, to: TOTAL - 4 },
 ];
 
 const STAGGER = 5;
 
 const Word: React.FC<{ text: string; local: number; size: number; mode: "pop" | "beat" }> = ({ text, local, size, mode }) => {
   const { fps } = useVideoConfig();
-  const sprung = spring({ frame: local, fps, config: { damping: 13, stiffness: 170, mass: 0.6 } });
+  const sprung = spring({ frame: local, fps, config: { damping: 15, stiffness: 170, mass: 0.6 } });
   // "beat": a heartbeat pulse 1 → 1.16 → 1 over 10 frames
   const pulse = mode === "beat" && local > 0 && local < 10 ? Math.sin((Math.PI * local) / 10) : 0;
   const pop = mode === "beat" ? 1 + 0.23 * pulse : sprung;
@@ -61,7 +59,7 @@ const Word: React.FC<{ text: string; local: number; size: number; mode: "pop" | 
 
 const Title: React.FC<{ def: TitleDef; frame: number }> = ({ def, frame }) => {
   if (frame < def.from || frame >= def.to) return null;
-  const size = def.size ?? 100;
+  const size = def.size ?? 96;
   const out = def.to > TOTAL ? 0 : easeIn(lin(frame, def.to - 7, def.to));
   let i = 0;
   return (
@@ -97,7 +95,7 @@ const Title: React.FC<{ def: TitleDef; frame: number }> = ({ def, frame }) => {
       {def.sub && frame >= def.sub.from ? (
         <div
           style={{
-            marginTop: 10,
+            marginTop: 30,
             fontSize: 44,
             fontWeight: 700,
             color: C.white,

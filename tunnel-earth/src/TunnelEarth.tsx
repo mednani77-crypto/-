@@ -8,6 +8,7 @@ import { Titles } from "./components/Titles";
 import { Subtitles } from "./components/Subtitles";
 import { Soundtrack } from "./components/Soundtrack";
 import { Guides } from "./components/Guides";
+import { TopScrim } from "./components/TopScrim";
 
 export type TunnelEarthProps = {
   guides: boolean;
@@ -19,6 +20,7 @@ export const TunnelEarth: React.FC<TunnelEarthProps> = ({ guides }) => {
       <Background />
       <Stage />
       <StageLabels />
+      <TopScrim />
       <Hud />
       <Titles />
       <Subtitles />
